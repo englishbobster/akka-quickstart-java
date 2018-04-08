@@ -1,0 +1,10 @@
+build/
+out/
+.idea/
+.gradle/
+**/elm-stuff/
+**/elm.js
+**/elm.html
+**/Main.js
+*.iml
+
