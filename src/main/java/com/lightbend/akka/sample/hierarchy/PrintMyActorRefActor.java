@@ -1,4 +1,4 @@
-package com.lightbend.akka.sample;
+package com.lightbend.akka.sample.hierarchy;
 
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
