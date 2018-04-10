@@ -1,8 +1,8 @@
-package com.lightbend.akka.sample;
+package com.lightbend.akka.sample.quickstart;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
-import com.lightbend.akka.sample.Greeter.*;
+import com.lightbend.akka.sample.quickstart.Greeter.*;
 
 import java.io.IOException;
 
