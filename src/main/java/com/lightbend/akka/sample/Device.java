@@ -22,6 +22,24 @@ public class Device extends AbstractActor {
         return Props.create(Device.class, groupId, deviceId);
     }
 
+    public static final class RecordTemperature {
+        final long requestId;
+        final double value;
+
+        public RecordTemperature(long requestId, double value) {
+            this.requestId = requestId;
+            this.value = value;
+        }
+    }
+
+    public static final class TemperatureRecorded {
+        final long requestId;
+
+        public TemperatureRecorded(long requestId) {
+            this.requestId = requestId;
+        }
+    }
+
     public static final class ReadTemperature {
         long requestId;
 
@@ -40,6 +58,19 @@ public class Device extends AbstractActor {
         }
     }
 
+    public static final class RequestTrackingDevice {
+        public String groupId;
+        public String deviceId;
+
+        public RequestTrackingDevice(String groupId, String deviceId) {
+            this.groupId = groupId;
+            this.deviceId = deviceId;
+        }
+    }
+
+    public static final class DeviceRegistered {}
+
+
     Optional<Double> lastTemperatureReading = Optional.empty();
 
     @Override
@@ -54,7 +85,21 @@ public class Device extends AbstractActor {
 
     @Override
     public Receive createReceive() {
-        return receiveBuilder().match(ReadTemperature.class, readTemperature -> {
+        return receiveBuilder()
+                .match(RequestTrackingDevice.class, r -> {
+                    if(this.groupId.equals(r.groupId) && this.deviceId.equals(r.deviceId)){
+                        getSender().tell(new DeviceRegistered(), getSelf());
+                    } else {
+                        log.warning("Ignoring TrackDevice request for {}-{}. This actor is responsible for {}-{}.",
+                                r.groupId, r.deviceId, this.groupId, this.deviceId);
+                    }
+                })
+                .match(RecordTemperature.class, r -> {
+                    log.info("Recorded temperature reading {} with {}", r.value, r.requestId);
+                    lastTemperatureReading = Optional.of(r.value);
+                    getSender().tell(new TemperatureRecorded(r.requestId), getSelf());
+                })
+                .match(ReadTemperature.class, readTemperature -> {
             getSender().tell(new RespondTemperature(readTemperature.requestId, lastTemperatureReading), getSelf());
         }).build();
     }
