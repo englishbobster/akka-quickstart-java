@@ -12,6 +12,7 @@ public class Device extends AbstractActor {
 
     final String groupId;
     final String deviceId;
+    Optional<Double> lastTemperatureReading = Optional.empty();
 
     public Device(String groupId, String deviceId) {
         this.groupId = groupId;
@@ -58,20 +59,6 @@ public class Device extends AbstractActor {
         }
     }
 
-    public static final class RequestTrackingDevice {
-        public String groupId;
-        public String deviceId;
-
-        public RequestTrackingDevice(String groupId, String deviceId) {
-            this.groupId = groupId;
-            this.deviceId = deviceId;
-        }
-    }
-
-    public static final class DeviceRegistered {}
-
-
-    Optional<Double> lastTemperatureReading = Optional.empty();
 
     @Override
     public void preStart() {
@@ -86,9 +73,9 @@ public class Device extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(RequestTrackingDevice.class, r -> {
+                .match(DeviceManager.RequestTrackDevice.class, r -> {
                     if(this.groupId.equals(r.groupId) && this.deviceId.equals(r.deviceId)){
-                        getSender().tell(new DeviceRegistered(), getSelf());
+                        getSender().tell(new DeviceManager.DeviceRegistered(), getSelf());
                     } else {
                         log.warning("Ignoring TrackDevice request for {}-{}. This actor is responsible for {}-{}.",
                                 r.groupId, r.deviceId, this.groupId, this.deviceId);

@@ -51,8 +51,8 @@ public class DeviceTest {
         TestKit testKit = new TestKit(testSystem);
         ActorRef device = testSystem.actorOf(Device.props("group", "device"));
 
-        device.tell(new Device.RequestTrackingDevice("group", "device"), testKit.testActor());
-        testKit.expectMsgClass(Device.DeviceRegistered.class);
+        device.tell(new DeviceManager.RequestTrackDevice("group", "device"), testKit.testActor());
+        testKit.expectMsgClass(DeviceManager.DeviceRegistered.class);
         assertEquals(device, testKit.lastSender());
     }
 
@@ -62,10 +62,10 @@ public class DeviceTest {
         TestKit testKit = new TestKit(testSystem);
         ActorRef device = testSystem.actorOf(Device.props("group", "device"));
 
-        device.tell(new Device.RequestTrackingDevice("wrongGroup", "device"), testKit.testActor());
+        device.tell(new DeviceManager.RequestTrackDevice("wrongGroup", "device"), testKit.testActor());
         testKit.expectNoMsg();
 
-        device.tell(new Device.RequestTrackingDevice("group", "wrongDevice"), testKit.testActor());
+        device.tell(new DeviceManager.RequestTrackDevice("group", "wrongDevice"), testKit.testActor());
         testKit.expectNoMsg();
     }
 }

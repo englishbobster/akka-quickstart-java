@@ -5,7 +5,6 @@ import akka.actor.ActorSystem;
 import akka.actor.PoisonPill;
 import akka.testkit.TestKit;
 import org.junit.Test;
-import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 
 import java.util.concurrent.TimeUnit;
@@ -85,16 +84,16 @@ public class DeviceGroupTest {
     public void testListActiveDevicesAfterOneShutsDown() {
         ActorSystem testSystem = ActorSystem.create("test-system");
         TestKit testKit = new TestKit(testSystem);
-        ActorRef groupActor = testSystem.actorOf(DeviceGroup.props("group"));
+        ActorRef deviceGroup = testSystem.actorOf(DeviceGroup.props("group"));
 
-        groupActor.tell(new DeviceManager.RequestTrackDevice("group", "device1"), testKit.testActor());
+        deviceGroup.tell(new DeviceManager.RequestTrackDevice("group", "device1"), testKit.testActor());
         testKit.expectMsgClass(DeviceManager.DeviceRegistered.class);
         ActorRef toShutDown = testKit.lastSender();
 
-        groupActor.tell(new DeviceManager.RequestTrackDevice("group", "device2"), testKit.testActor());
+        deviceGroup.tell(new DeviceManager.RequestTrackDevice("group", "device2"), testKit.testActor());
         testKit.expectMsgClass(DeviceManager.DeviceRegistered.class);
 
-        groupActor.tell(new DeviceGroup.RequestDeviceList(0L), testKit.testActor());
+        deviceGroup.tell(new DeviceGroup.RequestDeviceList(0L), testKit.testActor());
         DeviceGroup.ReplyDeviceList reply = testKit.expectMsgClass(DeviceGroup.ReplyDeviceList.class);
         assertEquals(0L, reply.requestId);
         assertEquals(Stream.of("device1", "device2").collect(Collectors.toSet()), reply.ids);
@@ -106,11 +105,11 @@ public class DeviceGroupTest {
         // using awaitAssert to retry because it might take longer for the groupActor
         // to see the Terminated, that order is undefined
         testKit.awaitAssert(() -> {
-            groupActor.tell(new DeviceGroup.RequestDeviceList(1L), testKit.testActor());
+            deviceGroup.tell(new DeviceGroup.RequestDeviceList(1L), testKit.testActor());
             DeviceGroup.ReplyDeviceList r = testKit.expectMsgClass(DeviceGroup.ReplyDeviceList.class);
             assertEquals(1L, r.requestId);
             assertEquals(Stream.of("device2").collect(Collectors.toSet()), r.ids);
             return null;
-        }, Duration.Inf(), new FiniteDuration(10, TimeUnit.SECONDS));
+        }, new FiniteDuration(10, TimeUnit.SECONDS), new FiniteDuration(10, TimeUnit.SECONDS));
     }
 }
